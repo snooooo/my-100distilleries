@@ -308,8 +308,20 @@ header .desc {
 }
 
 /* Share section */
-.share-section { display: none; }
-.share-section.show { display: block; }
+.share-section {}
+.share-section.disabled .btn-share {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+.share-hint {
+  text-align: center;
+  font-size: 0.72em;
+  color: var(--cream-dim);
+  margin-bottom: 8px;
+  transition: opacity 0.3s;
+}
+.share-section:not(.disabled) .share-hint { display: none; }
 .diff-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -486,7 +498,8 @@ footer a:hover { color: var(--gold); }
   <div class="result-countries" id="resultCountries"></div>
 </div>
 
-<div class="share-section" id="shareSection">
+<div class="share-section disabled" id="shareSection">
+  <div class="share-hint" id="shareHint">100個選ぶとシェアできます</div>
   <div class="share-row">
     <button class="btn-share" id="btnShareX">Xでシェア</button>
     <button class="btn-share btn-share-url" id="btnShareURL">URLをコピー</button>
@@ -729,13 +742,19 @@ function updateCounter() {
 
   const card = document.getElementById('resultCard');
   const shareSection = document.getElementById('shareSection');
+  const shareHint = document.getElementById('shareHint');
   if (cnt === 100) {
     card.classList.add('show');
-    shareSection.classList.add('show');
+    shareSection.classList.remove('disabled');
     renderResult();
   } else {
     card.classList.remove('show');
-    shareSection.classList.remove('show');
+    shareSection.classList.add('disabled');
+    if (cnt > 100) {
+      shareHint.textContent = `${cnt - 100}個多いです。100個に絞るとシェアできます`;
+    } else {
+      shareHint.textContent = `あと${100 - cnt}個で百名蒸が完成します`;
+    }
   }
 }
 
