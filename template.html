@@ -635,7 +635,8 @@ function renderGrid() {
   const sq = searchQuery.toLowerCase();
   countries.forEach(co => {
     const items = D.filter(d => d.co === co);
-    const filteredItems = sq ? items.filter(d => d.ja.includes(searchQuery) || d.en.toLowerCase().includes(sq)) : items;
+    const filteredItems = (sq ? items.filter(d => d.ja.includes(searchQuery) || d.en.toLowerCase().includes(sq)) : items)
+      .slice().sort((a, b) => (a.ar || '').localeCompare(b.ar || '', 'ja'));
     if (sq && filteredItems.length === 0) return;
     const selCnt = items.filter(d => selected.has(d.i)).length;
     const collapsed = collapsedCountries.has(co) ? ' collapsed' : '';
