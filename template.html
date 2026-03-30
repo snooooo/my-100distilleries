@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>俺の百名蒸 - My 100 Distilleries</title>
+
+<!-- OGP -->
+<meta property="og:title" content="俺の百名蒸 ― 世界283蒸留所から100選を作ろう">
+<meta property="og:description" content="デフォルトの百名蒸に異議あり？なら自分の100選を作ってみろ。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="俺の百名蒸 ― 世界283蒸留所から100選を作ろう">
+<meta name="twitter:description" content="デフォルトの百名蒸に異議あり？なら自分の100選を作ってみろ。">
+<meta name="twitter:image" content="ogp.png">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Cormorant+Garamond:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #1a1510;
+  --bg2: #231e17;
+  --bg3: #2c251d;
+  --gold: #c9a84c;
+  --gold-dim: #8a7235;
+  --gold-bright: #e8c96a;
+  --cream: #e8dcc8;
+  --cream-dim: #9a8e7a;
+  --red: #9b4444;
+  --red-dim: #6b3333;
+  --green: #5a9a5a;
+  --green-dim: #3a6a3a;
+  --text: #e8dcc8;
+  --text-dim: #7a6e5a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Serif JP', serif;
+  min-height: 100vh;
+}
+
+.noise {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+header {
+  text-align: center;
+  padding: 40px 0 30px;
+  border-bottom: 1px solid var(--gold-dim);
+  margin-bottom: 40px;
+}
+header h1 {
+  font-weight: 900;
+  font-size: 2.4em;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+header .subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1em;
+  color: var(--cream-dim);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+header .desc {
+  margin-top: 20px;
+  font-size: 0.85em;
+  color: var(--cream-dim);
+  line-height: 1.8;
+}
+
+/* Viewing someone else's banner */
+.viewing-banner {
+  display: none;
+  text-align: center;
+  padding: 14px 20px;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid var(--gold-dim);
+  margin-bottom: 24px;
+  font-size: 0.82em;
+  color: var(--cream-dim);
+  line-height: 1.6;
+}
+.viewing-banner.show { display: block; }
+.viewing-banner .make-mine {
+  display: inline-block;
+  margin-top: 8px;
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 5px 16px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+/* Counter bar */
+.counter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--gold-dim);
+  padding: 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.counter-bar .count {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--gold);
+}
+.counter-bar .count span { font-size: 0.55em; color: var(--cream-dim); font-weight: 400; }
+.counter-bar .count.over { color: var(--red); }
+.counter-bar .count.exact { color: var(--green); }
+
+.btn-sm {
+  background: none;
+  border: 1px solid var(--gold-dim);
+  color: var(--cream-dim);
+  padding: 6px 16px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.75em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-sm:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Filter tabs */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 30px;
+  justify-content: center;
+}
+.filter-btn {
+  background: none;
+  border: 1px solid var(--text-dim);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.72em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover { border-color: var(--cream); color: var(--cream); }
+.filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201, 168, 76, 0.1); }
+
+/* Country sections */
+.country-section { margin-bottom: 36px; }
+.country-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+}
+.country-header h2 { font-size: 1.1em; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; }
+.country-header .country-count { font-family: 'Cormorant Garamond', serif; font-size: 0.85em; color: var(--cream-dim); }
+
+.area-label { font-size: 0.72em; color: var(--gold-dim); margin: 10px 0 6px; letter-spacing: 0.05em; }
+
+/* Distillery items */
+.distillery-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border: 1px solid var(--text-dim);
+  border-radius: 2px;
+  font-size: 0.73em;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  color: var(--cream-dim);
+  background: transparent;
+  line-height: 1.4;
+  margin: 0 4px 6px 0;
+}
+.distillery-item:hover { border-color: var(--cream); color: var(--cream); }
+.distillery-item.selected { border-color: var(--gold); color: var(--gold-bright); background: rgba(201, 168, 76, 0.08); }
+/* Diff indicators */
+.distillery-item.diff-in { border-color: var(--green); background: rgba(90, 154, 90, 0.1); }
+.distillery-item.diff-in::before { content: '＋'; margin-right: 3px; color: var(--green); font-size: 0.85em; }
+.distillery-item.diff-out { border-color: var(--red-dim); background: rgba(155, 68, 68, 0.06); }
+.distillery-item.diff-out::after { content: ''; }
+.distillery-item.selected.diff-in { color: var(--green); border-color: var(--green); }
+
+/* View toggle */
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.view-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.78em;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.view-btn:hover { color: var(--cream); }
+.view-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* Compact list view */
+.compact-list {
+  display: none;
+  columns: 2;
+  column-gap: 24px;
+  font-size: 0.72em;
+  line-height: 2;
+}
+.compact-list.show { display: block; }
+.compact-list .cl-country { font-weight: 700; color: var(--gold); margin-top: 8px; break-after: avoid; }
+.compact-list .cl-item { color: var(--cream-dim); padding-left: 8px; break-inside: avoid; }
+.compact-list .cl-item.sel { color: var(--gold-bright); }
+
+/* Diff section */
+.diff-section {
+  display: none;
+  margin: 30px 0;
+  padding: 24px;
+  border: 1px solid var(--gold-dim);
+  background: var(--bg2);
+}
+.diff-section.show { display: block; }
+.diff-section h3 {
+  font-size: 1em;
+  color: var(--gold);
+  margin-bottom: 16px;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.diff-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.diff-col h4 {
+  font-size: 0.78em;
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+.diff-col h4.col-in { color: var(--green); }
+.diff-col h4.col-out { color: var(--red); }
+.diff-col .diff-item {
+  font-size: 0.75em;
+  line-height: 2;
+  padding-left: 4px;
+}
+.diff-col .diff-item.in { color: var(--green); }
+.diff-col .diff-item.out { color: var(--red); text-decoration: line-through; opacity: 0.7; }
+.diff-none {
+  text-align: center;
+  color: var(--cream-dim);
+  font-size: 0.8em;
+  padding: 10px 0;
+}
+
+/* Result card */
+.result-card {
+  display: none;
+  margin-top: 10px;
+  padding: 30px;
+  border: 1px solid var(--gold);
+  background: var(--bg2);
+  text-align: center;
+}
+.result-card.show { display: block; }
+.result-card h3 { font-size: 1.3em; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 16px; }
+.result-stats { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 20px; }
+.result-stat { text-align: center; }
+.result-stat .num { font-family: 'Cormorant Garamond', serif; font-size: 2em; font-weight: 700; color: var(--gold-bright); }
+.result-stat .label { font-size: 0.7em; color: var(--cream-dim); }
+.result-countries { font-size: 0.75em; color: var(--cream-dim); line-height: 1.8; }
+
+/* Share buttons */
+.share-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.btn-share {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 10px 24px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.82em;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.08em;
+}
+.btn-share:hover { background: rgba(201, 168, 76, 0.1); color: var(--gold-bright); }
+.btn-share-url {
+  border-color: var(--cream-dim);
+  color: var(--cream-dim);
+}
+.btn-share-url:hover { border-color: var(--cream); color: var(--cream); }
+
+.url-copied {
+  display: none;
+  font-size: 0.75em;
+  color: var(--green);
+  text-align: center;
+  margin-top: 8px;
+}
+.url-copied.show { display: block; }
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 50px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(201, 168, 76, 0.15);
+  font-size: 0.7em;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+footer a { color: var(--gold-dim); text-decoration: none; }
+footer a:hover { color: var(--gold); }
+
+@media (max-width: 600px) {
+  header h1 { font-size: 1.6em; }
+  .container { padding: 20px 12px 60px; }
+  .distillery-item { font-size: 0.68em; padding: 4px 8px; }
+  .compact-list { columns: 1; }
+  .counter-bar { gap: 12px; padding: 10px 12px; }
+  .diff-columns { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+
+<header>
+  <h1>俺の百名蒸</h1>
+  <div class="subtitle">My 100 Distilleries</div>
+  <div class="desc">
+    世界283蒸留所から、あなたの100選を作ろう。<br>
+    蒸留所をタップして入れ替え。完成したらシェア。
+  </div>
+</header>
+
+<div class="viewing-banner" id="viewingBanner">
+  他の人の百名蒸を閲覧中です。<br>
+  <button class="make-mine" id="btnMakeMine">自分の百名蒸を作る</button>
+</div>
+
+<div class="counter-bar">
+  <div class="count" id="counter"><span>選出</span> 100 <span>/ 100</span></div>
+  <button class="btn-sm" id="btnReset">デフォルトに戻す</button>
+  <button class="btn-sm" id="btnClear">全解除</button>
+</div>
+
+<div class="filter-bar" id="filterBar"></div>
+
+<div class="view-toggle">
+  <button class="view-btn active" data-view="grid">選択モード</button>
+  <button class="view-btn" data-view="compact">一覧モード</button>
+</div>
+
+<div id="gridView"></div>
+<div class="compact-list" id="compactView"></div>
+
+<div class="diff-section" id="diffSection">
+  <h3>デフォルトからの変更</h3>
+  <div class="diff-columns" id="diffColumns"></div>
+</div>
+
+<div class="result-card" id="resultCard">
+  <h3>俺の百名蒸</h3>
+  <div class="result-stats" id="resultStats"></div>
+  <div class="result-countries" id="resultCountries"></div>
+</div>
+
+<div class="share-row">
+  <button class="btn-share" id="btnShareX">Xでシェア</button>
+  <button class="btn-share btn-share-url" id="btnShareURL">URLをコピー</button>
+</div>
+<div class="url-copied" id="urlCopied">URLをクリップボードにコピーしました</div>
+
+<footer>
+  <div>百名蒸 v1（暫定版）― 選定: モルペリ編集部</div>
+  <div style="margin-top: 4px;">蒸留所の制覇記録をつけるなら → <a href="#">モルペリ</a></div>
+</footer>
+
+</div>
+
+<script>
+const D = __DATA_PLACEHOLDER__;
+
+// Default selected indices (from original data)
+const DEFAULTS = new Set();
+D.forEach((d, idx) => { if (d.s) DEFAULTS.add(idx); });
+
+// --- STATE ---
+let selected = new Set(DEFAULTS);
+let filterCountry = 'all';
+let viewMode = 'grid';
+let isViewing = false; // viewing someone else's URL
+
+// --- URL STATE ---
+function encodeState() {
+  // Encode as diff from default: +added,-removed
+  const added = [];
+  const removed = [];
+  selected.forEach(idx => { if (!DEFAULTS.has(idx)) added.push(idx); });
+  DEFAULTS.forEach(idx => { if (!selected.has(idx)) removed.push(idx); });
+  if (added.length === 0 && removed.length === 0) return '';
+  let parts = [];
+  if (added.length > 0) parts.push('a=' + added.join('.'));
+  if (removed.length > 0) parts.push('r=' + removed.join('.'));
+  return parts.join('&');
+}
+
+function decodeState() {
+  const params = new URLSearchParams(window.location.search);
+  const a = params.get('a');
+  const r = params.get('r');
+  if (!a && !r) return false;
+
+  selected = new Set(DEFAULTS);
+  if (r) r.split('.').forEach(x => { const n = parseInt(x); if (!isNaN(n)) selected.delete(n); });
+  if (a) a.split('.').forEach(x => { const n = parseInt(x); if (!isNaN(n)) selected.add(n); });
+  return true;
+}
+
+function getShareURL() {
+  const state = encodeState();
+  const base = window.location.origin + window.location.pathname;
+  return state ? base + '?' + state : base;
+}
+
+// --- DIFF ---
+function getDiff() {
+  const added = [];
+  const removed = [];
+  selected.forEach(idx => { if (!DEFAULTS.has(idx)) added.push(idx); });
+  DEFAULTS.forEach(idx => { if (!selected.has(idx)) removed.push(idx); });
+  return { added, removed };
+}
+
+// --- COUNTRIES ---
+function getCountries() {
+  const seen = [];
+  const set = new Set();
+  D.forEach(d => { if (!set.has(d.co)) { set.add(d.co); seen.push(d.co); } });
+  return seen;
+}
+
+// --- RENDER ---
+function renderFilters() {
+  const countries = getCountries();
+  const bar = document.getElementById('filterBar');
+  let html = `<button class="filter-btn ${filterCountry === 'all' ? 'active' : ''}" data-co="all">すべて</button>`;
+  countries.forEach(co => {
+    const cnt = D.filter((d, i) => d.co === co && selected.has(i)).length;
+    const total = D.filter(d => d.co === co).length;
+    html += `<button class="filter-btn ${filterCountry === co ? 'active' : ''}" data-co="${co}">${co} <span style="opacity:0.5">${cnt}/${total}</span></button>`;
+  });
+  bar.innerHTML = html;
+  bar.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterCountry = btn.dataset.co;
+      updateAll();
+    });
+  });
+}
+
+function renderGrid() {
+  const container = document.getElementById('gridView');
+  if (viewMode !== 'grid') { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+
+  const { added, removed } = getDiff();
+  const addedSet = new Set(added);
+  const removedSet = new Set(removed);
+  const countries = getCountries().filter(co => filterCountry === 'all' || co === filterCountry);
+  let html = '';
+
+  countries.forEach(co => {
+    const items = D.map((d, idx) => ({ ...d, idx })).filter(d => d.co === co);
+    const selCnt = items.filter(d => selected.has(d.idx)).length;
+    html += `<div class="country-section"><div class="country-header"><h2>${co}</h2><span class="country-count">${selCnt} / ${items.length}</span></div>`;
+
+    let currentArea = null;
+    items.forEach(d => {
+      if (d.ar && d.ar !== currentArea) {
+        currentArea = d.ar;
+        html += `<div class="area-label">${currentArea}</div>`;
+      }
+      const sel = selected.has(d.idx);
+      const diffIn = addedSet.has(d.idx) && sel;
+      const diffOut = removedSet.has(d.idx) && !sel;
+      let cls = 'distillery-item';
+      if (sel) cls += ' selected';
+      if (diffIn) cls += ' diff-in';
+      if (diffOut) cls += ' diff-out';
+      html += `<span class="${cls}" data-idx="${d.idx}">${d.ja}</span>`;
+    });
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+  container.querySelectorAll('.distillery-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx);
+      if (selected.has(idx)) selected.delete(idx);
+      else selected.add(idx);
+      isViewing = false;
+      document.getElementById('viewingBanner').classList.remove('show');
+      updateAll();
+    });
+  });
+}
+
+function renderCompact() {
+  const container = document.getElementById('compactView');
+  if (viewMode !== 'compact') { container.classList.remove('show'); return; }
+  container.classList.add('show');
+
+  const { added } = getDiff();
+  const addedSet = new Set(added);
+  const countries = getCountries().filter(co => filterCountry === 'all' || co === filterCountry);
+  let html = '';
+  countries.forEach(co => {
+    const items = D.map((d, idx) => ({ ...d, idx })).filter(d => d.co === co && selected.has(d.idx));
+    if (items.length === 0) return;
+    html += `<div class="cl-country">${co}（${items.length}）</div>`;
+    items.forEach(d => {
+      const isNew = addedSet.has(d.idx);
+      html += `<div class="cl-item sel">${isNew ? '<span style="color:var(--green)">＋</span>' : '◆'} ${d.ja}</div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+function renderDiff() {
+  const section = document.getElementById('diffSection');
+  const { added, removed } = getDiff();
+
+  if (added.length === 0 && removed.length === 0) {
+    section.classList.remove('show');
+    return;
+  }
+
+  section.classList.add('show');
+  const cols = document.getElementById('diffColumns');
+
+  let html = '<div class="diff-col"><h4 class="col-in">＋ 追加（' + added.length + '）</h4>';
+  if (added.length === 0) html += '<div class="diff-item" style="color:var(--cream-dim)">なし</div>';
+  added.forEach(idx => {
+    html += `<div class="diff-item in">＋ ${D[idx].ja}<span style="color:var(--cream-dim);font-size:0.85em"> ${D[idx].co}</span></div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="diff-col"><h4 class="col-out">－ 除外（' + removed.length + '）</h4>';
+  if (removed.length === 0) html += '<div class="diff-item" style="color:var(--cream-dim)">なし</div>';
+  removed.forEach(idx => {
+    html += `<div class="diff-item out">－ ${D[idx].ja}<span style="color:var(--cream-dim);font-size:0.85em"> ${D[idx].co}</span></div>`;
+  });
+  html += '</div>';
+
+  cols.innerHTML = html;
+}
+
+function updateCounter() {
+  const cnt = selected.size;
+  const el = document.getElementById('counter');
+  el.className = 'count' + (cnt === 100 ? ' exact' : cnt > 100 ? ' over' : '');
+  el.innerHTML = `<span>選出</span> ${cnt} <span>/ 100</span>`;
+
+  const card = document.getElementById('resultCard');
+  if (cnt === 100) {
+    card.classList.add('show');
+    renderResult();
+  } else {
+    card.classList.remove('show');
+  }
+}
+
+function renderResult() {
+  const stats = document.getElementById('resultStats');
+  const countriesEl = document.getElementById('resultCountries');
+  const countries = getCountries();
+  const { added, removed } = getDiff();
+  let parts = [];
+  let countryCount = 0;
+  countries.forEach(co => {
+    const cnt = D.filter((d, i) => d.co === co && selected.has(i)).length;
+    if (cnt > 0) { parts.push(`${co} ${cnt}`); countryCount++; }
+  });
+
+  let statHtml = `<div class="result-stat"><div class="num">100</div><div class="label">蒸留所</div></div>`;
+  statHtml += `<div class="result-stat"><div class="num">${countryCount}</div><div class="label">カ国</div></div>`;
+  statHtml += `<div class="result-stat"><div class="num">${added.length}</div><div class="label">追加</div></div>`;
+  statHtml += `<div class="result-stat"><div class="num">${removed.length}</div><div class="label">除外</div></div>`;
+  stats.innerHTML = statHtml;
+  countriesEl.textContent = parts.join('　|　');
+}
+
+function updateAll() {
+  updateCounter();
+  renderFilters();
+  renderGrid();
+  renderCompact();
+  renderDiff();
+}
+
+// --- EVENTS ---
+document.getElementById('btnReset').addEventListener('click', () => {
+  selected = new Set(DEFAULTS);
+  isViewing = false;
+  document.getElementById('viewingBanner').classList.remove('show');
+  updateAll();
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+  selected.clear();
+  updateAll();
+});
+
+document.getElementById('btnMakeMine').addEventListener('click', () => {
+  isViewing = false;
+  document.getElementById('viewingBanner').classList.remove('show');
+  // Keep current selection as starting point
+});
+
+document.querySelectorAll('.view-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    viewMode = btn.dataset.view;
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('gridView').style.display = viewMode === 'grid' ? 'block' : 'none';
+    renderGrid();
+    renderCompact();
+  });
+});
+
+document.getElementById('btnShareX').addEventListener('click', () => {
+  const cnt = selected.size;
+  const { added, removed } = getDiff();
+  const countries = getCountries();
+  let parts = [];
+  countries.forEach(co => {
+    const c = D.filter((d, i) => d.co === co && selected.has(i)).length;
+    if (c > 0) parts.push(`${co}${c}`);
+  });
+
+  let text = `俺の百名蒸（${cnt}/100）\n`;
+  text += parts.join(' / ') + '\n';
+  if (added.length > 0 || removed.length > 0) {
+    text += `\nデフォルトから${added.length > 0 ? '＋' + added.length : ''}${removed.length > 0 ? '　－' + removed.length : ''} 変更\n`;
+    if (added.length > 0 && added.length <= 5) {
+      text += '追加: ' + added.map(i => D[i].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
+    }
+    if (removed.length > 0 && removed.length <= 5) {
+      text += '除外: ' + removed.map(i => D[i].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
+    }
+  }
+  text += '\n' + getShareURL();
+  text += '\n#俺の百名蒸 #モルペリ';
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+});
+
+document.getElementById('btnShareURL').addEventListener('click', () => {
+  const url = getShareURL();
+  navigator.clipboard.writeText(url).then(() => {
+    const el = document.getElementById('urlCopied');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }).catch(() => {
+    prompt('URLをコピーしてください:', url);
+  });
+});
+
+// --- INIT ---
+if (decodeState()) {
+  isViewing = true;
+  document.getElementById('viewingBanner').classList.add('show');
+}
+updateAll();
+</script>
+</body>
+</html>
