@@ -148,6 +148,39 @@ header .desc {
 }
 .btn-sm:hover { border-color: var(--gold); color: var(--gold); }
 
+/* Search */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-input {
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  color: var(--cream);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.75em;
+  padding: 6px 28px 6px 12px;
+  width: 180px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input::placeholder { color: var(--text-dim); }
+.search-input:focus { border-color: var(--gold); }
+.search-clear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0 4px;
+  display: none;
+}
+.search-clear.show { display: block; }
+.search-clear:hover { color: var(--cream); }
+
 /* Filter tabs */
 .filter-bar {
   display: flex;
@@ -170,7 +203,7 @@ header .desc {
 .filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201, 168, 76, 0.1); }
 
 /* Country sections */
-.country-section { margin-bottom: 36px; }
+.country-section { margin-bottom: 36px; scroll-margin-top: 60px; }
 .country-header {
   display: flex;
   align-items: baseline;
@@ -178,9 +211,22 @@ header .desc {
   margin-bottom: 14px;
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  cursor: pointer;
+  user-select: none;
 }
-.country-header h2 { font-size: 1.1em; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; }
+.country-header:hover h2 { color: var(--gold-bright); }
+.country-header h2 { font-size: 1.1em; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; transition: color 0.2s; }
 .country-header .country-count { font-family: 'Cormorant Garamond', serif; font-size: 0.85em; color: var(--cream-dim); }
+.country-header::after {
+  content: '▾';
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 0.8em;
+  transition: transform 0.2s;
+}
+.country-section.collapsed .country-header::after { transform: rotate(-90deg); }
+.country-section.collapsed .area-label,
+.country-section.collapsed .distillery-item { display: none; }
 
 .area-label { font-size: 0.72em; color: var(--gold-dim); margin: 10px 0 6px; letter-spacing: 0.05em; }
 
@@ -247,19 +293,23 @@ header .desc {
 /* Diff section */
 .diff-section {
   display: none;
-  margin: 30px 0;
-  padding: 24px;
+  margin: 0 0 20px;
+  padding: 16px 20px;
   border: 1px solid var(--gold-dim);
   background: var(--bg2);
 }
 .diff-section.show { display: block; }
 .diff-section h3 {
-  font-size: 1em;
+  font-size: 0.9em;
   color: var(--gold);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   letter-spacing: 0.08em;
   text-align: center;
 }
+
+/* Share section */
+.share-section { display: none; }
+.share-section.show { display: block; }
 .diff-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -339,6 +389,30 @@ header .desc {
 }
 .url-copied.show { display: block; }
 
+/* Scroll to top */
+.scroll-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg2);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-size: 1.2em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scroll-top.show { opacity: 1; pointer-events: auto; }
+.scroll-top:hover { border-color: var(--gold); background: var(--bg3); }
+
 /* Footer */
 footer {
   text-align: center;
@@ -357,7 +431,8 @@ footer a:hover { color: var(--gold); }
   .container { padding: 20px 12px 60px; }
   .distillery-item { font-size: 0.68em; padding: 4px 8px; }
   .compact-list { columns: 1; }
-  .counter-bar { gap: 12px; padding: 10px 12px; }
+  .counter-bar { gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+  .search-input { width: 140px; }
   .diff-columns { grid-template-columns: 1fr; }
 }
 </style>
@@ -381,9 +456,18 @@ footer a:hover { color: var(--gold); }
 </div>
 
 <div class="counter-bar">
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="searchInput" placeholder="蒸留所を検索…">
+    <button class="search-clear" id="searchClear">×</button>
+  </div>
   <div class="count" id="counter"><span>選出</span> 100 <span>/ 100</span></div>
   <button class="btn-sm" id="btnReset">デフォルトに戻す</button>
   <button class="btn-sm" id="btnClear">全解除</button>
+</div>
+
+<div class="diff-section" id="diffSection">
+  <h3>デフォルトからの変更</h3>
+  <div class="diff-columns" id="diffColumns"></div>
 </div>
 
 <div class="filter-bar" id="filterBar"></div>
@@ -396,42 +480,46 @@ footer a:hover { color: var(--gold); }
 <div id="gridView"></div>
 <div class="compact-list" id="compactView"></div>
 
-<div class="diff-section" id="diffSection">
-  <h3>デフォルトからの変更</h3>
-  <div class="diff-columns" id="diffColumns"></div>
-</div>
-
 <div class="result-card" id="resultCard">
   <h3>俺の百名蒸</h3>
   <div class="result-stats" id="resultStats"></div>
   <div class="result-countries" id="resultCountries"></div>
 </div>
 
-<div class="share-row">
-  <button class="btn-share" id="btnShareX">Xでシェア</button>
-  <button class="btn-share btn-share-url" id="btnShareURL">URLをコピー</button>
+<div class="share-section" id="shareSection">
+  <div class="share-row">
+    <button class="btn-share" id="btnShareX">Xでシェア</button>
+    <button class="btn-share btn-share-url" id="btnShareURL">URLをコピー</button>
+  </div>
+  <div class="url-copied" id="urlCopied">URLをクリップボードにコピーしました</div>
 </div>
-<div class="url-copied" id="urlCopied">URLをクリップボードにコピーしました</div>
 
 <footer>
   <div>百名蒸 v1（暫定版）― 選定: モルペリ編集部</div>
-  <div style="margin-top: 4px;">蒸留所の制覇記録をつけるなら → <a href="#">モルペリ</a></div>
+  <div style="margin-top: 4px;">蒸留所の制覇記録をつけるなら → <a href="https://maltperi.com/" target="_blank" rel="noopener">モルペリ</a></div>
 </footer>
 
+<button class="scroll-top" id="scrollTop" aria-label="トップへ">↑</button>
 </div>
 
 <script>
 const D = __DATA_PLACEHOLDER__;
 
-// Default selected indices (from original data)
+// Lookup: id -> index in D array
+const ID2IDX = {};
+D.forEach((d, idx) => { ID2IDX[d.i] = idx; });
+
+// Default selected ids (using d.i, stable across reordering)
 const DEFAULTS = new Set();
-D.forEach((d, idx) => { if (d.s) DEFAULTS.add(idx); });
+D.forEach(d => { if (d.s) DEFAULTS.add(d.i); });
 
 // --- STATE ---
 let selected = new Set(DEFAULTS);
 let filterCountry = 'all';
 let viewMode = 'grid';
 let isViewing = false; // viewing someone else's URL
+let searchQuery = '';
+let collapsedCountries = new Set();
 
 // --- URL STATE ---
 function encodeState() {
@@ -488,14 +576,33 @@ function renderFilters() {
   const bar = document.getElementById('filterBar');
   let html = `<button class="filter-btn ${filterCountry === 'all' ? 'active' : ''}" data-co="all">すべて</button>`;
   countries.forEach(co => {
-    const cnt = D.filter((d, i) => d.co === co && selected.has(i)).length;
+    const cnt = D.filter(d => d.co === co && selected.has(d.i)).length;
     const total = D.filter(d => d.co === co).length;
     html += `<button class="filter-btn ${filterCountry === co ? 'active' : ''}" data-co="${co}">${co} <span style="opacity:0.5">${cnt}/${total}</span></button>`;
   });
   bar.innerHTML = html;
   bar.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      filterCountry = btn.dataset.co;
+      const co = btn.dataset.co;
+      // If viewing all and clicking a country, scroll to it instead of filtering
+      if (filterCountry === 'all' && co !== 'all') {
+        const section = document.getElementById('section-' + co);
+        if (section) {
+          // Expand if collapsed
+          if (collapsedCountries.has(co)) {
+            collapsedCountries.delete(co);
+            section.classList.remove('collapsed');
+          }
+          section.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+      }
+      // Clicking active country filter resets to all
+      if (filterCountry === co && co !== 'all') {
+        filterCountry = 'all';
+      } else {
+        filterCountry = co;
+      }
       updateAll();
     });
   });
@@ -512,25 +619,29 @@ function renderGrid() {
   const countries = getCountries().filter(co => filterCountry === 'all' || co === filterCountry);
   let html = '';
 
+  const sq = searchQuery.toLowerCase();
   countries.forEach(co => {
-    const items = D.map((d, idx) => ({ ...d, idx })).filter(d => d.co === co);
-    const selCnt = items.filter(d => selected.has(d.idx)).length;
-    html += `<div class="country-section"><div class="country-header"><h2>${co}</h2><span class="country-count">${selCnt} / ${items.length}</span></div>`;
+    const items = D.filter(d => d.co === co);
+    const filteredItems = sq ? items.filter(d => d.ja.includes(searchQuery) || d.en.toLowerCase().includes(sq)) : items;
+    if (sq && filteredItems.length === 0) return;
+    const selCnt = items.filter(d => selected.has(d.i)).length;
+    const collapsed = collapsedCountries.has(co) ? ' collapsed' : '';
+    html += `<div class="country-section${collapsed}" id="section-${co}" data-co="${co}"><div class="country-header"><h2>${co}</h2><span class="country-count">${selCnt} / ${items.length}</span></div>`;
 
     let currentArea = null;
-    items.forEach(d => {
+    filteredItems.forEach(d => {
       if (d.ar && d.ar !== currentArea) {
         currentArea = d.ar;
         html += `<div class="area-label">${currentArea}</div>`;
       }
-      const sel = selected.has(d.idx);
-      const diffIn = addedSet.has(d.idx) && sel;
-      const diffOut = removedSet.has(d.idx) && !sel;
+      const sel = selected.has(d.i);
+      const diffIn = addedSet.has(d.i) && sel;
+      const diffOut = removedSet.has(d.i) && !sel;
       let cls = 'distillery-item';
       if (sel) cls += ' selected';
       if (diffIn) cls += ' diff-in';
       if (diffOut) cls += ' diff-out';
-      html += `<span class="${cls}" data-idx="${d.idx}">${d.ja}</span>`;
+      html += `<span class="${cls}" data-id="${d.i}">${d.ja}</span>`;
     });
     html += `</div>`;
   });
@@ -538,12 +649,21 @@ function renderGrid() {
   container.innerHTML = html;
   container.querySelectorAll('.distillery-item').forEach(el => {
     el.addEventListener('click', () => {
-      const idx = parseInt(el.dataset.idx);
-      if (selected.has(idx)) selected.delete(idx);
-      else selected.add(idx);
+      const id = parseInt(el.dataset.id);
+      if (selected.has(id)) selected.delete(id);
+      else selected.add(id);
       isViewing = false;
       document.getElementById('viewingBanner').classList.remove('show');
       updateAll();
+    });
+  });
+  container.querySelectorAll('.country-header').forEach(el => {
+    el.addEventListener('click', () => {
+      const section = el.parentElement;
+      const co = section.dataset.co;
+      if (collapsedCountries.has(co)) collapsedCountries.delete(co);
+      else collapsedCountries.add(co);
+      section.classList.toggle('collapsed');
     });
   });
 }
@@ -556,13 +676,15 @@ function renderCompact() {
   const { added } = getDiff();
   const addedSet = new Set(added);
   const countries = getCountries().filter(co => filterCountry === 'all' || co === filterCountry);
+  const sq = searchQuery.toLowerCase();
   let html = '';
   countries.forEach(co => {
-    const items = D.map((d, idx) => ({ ...d, idx })).filter(d => d.co === co && selected.has(d.idx));
+    let items = D.filter(d => d.co === co && selected.has(d.i));
+    if (sq) items = items.filter(d => d.ja.includes(searchQuery) || d.en.toLowerCase().includes(sq));
     if (items.length === 0) return;
     html += `<div class="cl-country">${co}（${items.length}）</div>`;
     items.forEach(d => {
-      const isNew = addedSet.has(d.idx);
+      const isNew = addedSet.has(d.i);
       html += `<div class="cl-item sel">${isNew ? '<span style="color:var(--green)">＋</span>' : '◆'} ${d.ja}</div>`;
     });
   });
@@ -580,18 +702,19 @@ function renderDiff() {
 
   section.classList.add('show');
   const cols = document.getElementById('diffColumns');
-
   let html = '<div class="diff-col"><h4 class="col-in">＋ 追加（' + added.length + '）</h4>';
   if (added.length === 0) html += '<div class="diff-item" style="color:var(--cream-dim)">なし</div>';
-  added.forEach(idx => {
-    html += `<div class="diff-item in">＋ ${D[idx].ja}<span style="color:var(--cream-dim);font-size:0.85em"> ${D[idx].co}</span></div>`;
+  added.forEach(id => {
+    const d = D[ID2IDX[id]];
+    html += `<div class="diff-item in">＋ ${d.ja}<span style="color:var(--cream-dim);font-size:0.85em"> ${d.co}</span></div>`;
   });
   html += '</div>';
 
   html += '<div class="diff-col"><h4 class="col-out">－ 除外（' + removed.length + '）</h4>';
   if (removed.length === 0) html += '<div class="diff-item" style="color:var(--cream-dim)">なし</div>';
-  removed.forEach(idx => {
-    html += `<div class="diff-item out">－ ${D[idx].ja}<span style="color:var(--cream-dim);font-size:0.85em"> ${D[idx].co}</span></div>`;
+  removed.forEach(id => {
+    const d = D[ID2IDX[id]];
+    html += `<div class="diff-item out">－ ${d.ja}<span style="color:var(--cream-dim);font-size:0.85em"> ${d.co}</span></div>`;
   });
   html += '</div>';
 
@@ -605,11 +728,14 @@ function updateCounter() {
   el.innerHTML = `<span>選出</span> ${cnt} <span>/ 100</span>`;
 
   const card = document.getElementById('resultCard');
+  const shareSection = document.getElementById('shareSection');
   if (cnt === 100) {
     card.classList.add('show');
+    shareSection.classList.add('show');
     renderResult();
   } else {
     card.classList.remove('show');
+    shareSection.classList.remove('show');
   }
 }
 
@@ -621,7 +747,7 @@ function renderResult() {
   let parts = [];
   let countryCount = 0;
   countries.forEach(co => {
-    const cnt = D.filter((d, i) => d.co === co && selected.has(i)).length;
+    const cnt = D.filter(d => d.co === co && selected.has(d.i)).length;
     if (cnt > 0) { parts.push(`${co} ${cnt}`); countryCount++; }
   });
 
@@ -677,7 +803,7 @@ document.getElementById('btnShareX').addEventListener('click', () => {
   const countries = getCountries();
   let parts = [];
   countries.forEach(co => {
-    const c = D.filter((d, i) => d.co === co && selected.has(i)).length;
+    const c = D.filter(d => d.co === co && selected.has(d.i)).length;
     if (c > 0) parts.push(`${co}${c}`);
   });
 
@@ -685,10 +811,10 @@ document.getElementById('btnShareX').addEventListener('click', () => {
   if (added.length > 0 || removed.length > 0) {
     text += '\n';
     if (added.length > 0) {
-      text += '追加: ' + added.map(i => D[i].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
+      text += '追加: ' + added.map(id => D[ID2IDX[id]].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
     }
     if (removed.length > 0) {
-      text += '除外: ' + removed.map(i => D[i].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
+      text += '除外: ' + removed.map(id => D[ID2IDX[id]].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
     }
   }
   text += '\n' + getShareURL();
@@ -705,6 +831,30 @@ document.getElementById('btnShareURL').addEventListener('click', () => {
   }).catch(() => {
     prompt('URLをコピーしてください:', url);
   });
+});
+
+// --- SCROLL TO TOP ---
+const scrollTopBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', () => {
+  scrollTopBtn.classList.toggle('show', window.scrollY > 400);
+}, { passive: true });
+scrollTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// --- SEARCH ---
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  document.getElementById('searchClear').classList.toggle('show', searchQuery.length > 0);
+  renderGrid();
+  renderCompact();
+});
+document.getElementById('searchClear').addEventListener('click', () => {
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('show');
+  renderGrid();
+  renderCompact();
 });
 
 // --- INIT ---
