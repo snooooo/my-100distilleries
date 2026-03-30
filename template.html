@@ -681,14 +681,13 @@ document.getElementById('btnShareX').addEventListener('click', () => {
     if (c > 0) parts.push(`${co}${c}`);
   });
 
-  let text = `俺の百名蒸（${cnt}/100）\n`;
-  text += parts.join(' / ') + '\n';
+  let text = '「俺の百名蒸」案\n';
   if (added.length > 0 || removed.length > 0) {
-    text += `\nデフォルトから${added.length > 0 ? '＋' + added.length : ''}${removed.length > 0 ? '　－' + removed.length : ''} 変更\n`;
-    if (added.length > 0 && added.length <= 5) {
+    text += '\n';
+    if (added.length > 0) {
       text += '追加: ' + added.map(i => D[i].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
     }
-    if (removed.length > 0 && removed.length <= 5) {
+    if (removed.length > 0) {
       text += '除外: ' + removed.map(i => D[i].ja.replace('蒸溜所','').replace('蒸留所','')).join(', ') + '\n';
     }
   }
