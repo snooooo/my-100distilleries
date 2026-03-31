@@ -686,7 +686,16 @@ function renderGrid() {
         countEl.textContent = `${selCnt} / ${total}`;
       }
       updateCounter();
-      renderFilters();
+      // Update filter button counts without rebuilding DOM
+      document.querySelectorAll('#filterBar .filter-btn').forEach(btn => {
+        const co = btn.dataset.co;
+        if (co && co !== 'all') {
+          const cnt = D.filter(d => d.co === co && selected.has(d.i)).length;
+          const total = D.filter(d => d.co === co).length;
+          const span = btn.querySelector('span');
+          if (span) span.textContent = `${cnt}/${total}`;
+        }
+      });
       renderCompact();
       renderDiff();
     });
