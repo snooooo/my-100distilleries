@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>俺の百名蒸 - My 100 Distilleries</title>
+<title>私の百名蒸 - My 100 Distilleries</title>
 
 <!-- OGP -->
-<meta property="og:title" content="俺の百名蒸 ― 世界283蒸留所から100選を作ろう">
+<meta property="og:title" content="私の百名蒸 ― 世界287蒸留所から100選を作ろう">
 <meta property="og:description" content="デフォルトの百名蒸に異議あり？なら自分の100選を作ってみろ。">
 <meta property="og:type" content="website">
 <meta property="og:image" content="ogp.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="俺の百名蒸 ― 世界283蒸留所から100選を作ろう">
+<meta name="twitter:title" content="私の百名蒸 ― 世界287蒸留所から100選を作ろう">
 <meta name="twitter:description" content="デフォルトの百名蒸に異議あり？なら自分の100選を作ってみろ。">
 <meta name="twitter:image" content="ogp.png">
 
@@ -454,10 +454,10 @@ footer a:hover { color: var(--gold); }
 <div class="container">
 
 <header>
-  <h1>俺の百名蒸</h1>
+  <h1>私の百名蒸</h1>
   <div class="subtitle">My 100 Distilleries</div>
   <div class="desc">
-    世界283蒸留所から、あなたの100選を作ろう。<br>
+    世界287蒸留所から、あなたの100選を作ろう。<br>
     蒸留所をタップして入れ替え。完成したらシェア。
   </div>
 </header>
@@ -493,7 +493,7 @@ footer a:hover { color: var(--gold); }
 <div class="compact-list" id="compactView"></div>
 
 <div class="result-card" id="resultCard">
-  <h3>俺の百名蒸</h3>
+  <h3>私の百名蒸</h3>
   <div class="result-stats" id="resultStats"></div>
   <div class="result-countries" id="resultCountries"></div>
 </div>
@@ -635,8 +635,8 @@ function renderGrid() {
   const sq = searchQuery.toLowerCase();
   countries.forEach(co => {
     const items = D.filter(d => d.co === co);
-    const filteredItems = (sq ? items.filter(d => d.ja.includes(searchQuery) || d.en.toLowerCase().includes(sq)) : items)
-      .slice().sort((a, b) => (a.ar || '').localeCompare(b.ar || '', 'ja'));
+    const base = sq ? items.filter(d => d.ja.includes(searchQuery) || d.en.toLowerCase().includes(sq)) : items;
+    const filteredItems = co === 'ジャパニーズ' ? base : base.slice().sort((a, b) => (a.ar || '').localeCompare(b.ar || '', 'ja'));
     if (sq && filteredItems.length === 0) return;
     const selCnt = items.filter(d => selected.has(d.i)).length;
     const collapsed = collapsedCountries.has(co) ? ' collapsed' : '';
@@ -827,7 +827,7 @@ document.getElementById('btnShareX').addEventListener('click', () => {
     if (c > 0) parts.push(`${co}${c}`);
   });
 
-  let text = '「俺の百名蒸」案\n';
+  let text = '「私の百名蒸」案\n';
   if (added.length > 0 || removed.length > 0) {
     text += '\n';
     if (added.length > 0) {
@@ -838,7 +838,7 @@ document.getElementById('btnShareX').addEventListener('click', () => {
     }
   }
   text += '\n' + getShareURL();
-  text += '\n#俺の百名蒸 #モルペリ';
+  text += '\n#私の百名蒸 #モルペリ';
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 });
 
