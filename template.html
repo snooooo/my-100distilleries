@@ -668,7 +668,27 @@ function renderGrid() {
       else selected.add(id);
       isViewing = false;
       document.getElementById('viewingBanner').classList.remove('show');
-      updateAll();
+      // Update in place without full re-render to preserve scroll
+      const { added, removed } = getDiff();
+      const addedSet = new Set(added);
+      const removedSet = new Set(removed);
+      const sel = selected.has(id);
+      el.classList.toggle('selected', sel);
+      el.classList.toggle('diff-in', addedSet.has(id) && sel);
+      el.classList.toggle('diff-out', removedSet.has(id) && !sel);
+      // Update country count
+      const section = el.closest('.country-section');
+      if (section) {
+        const co = section.dataset.co;
+        const countEl = section.querySelector('.country-count');
+        const total = D.filter(d => d.co === co).length;
+        const selCnt = D.filter(d => d.co === co && selected.has(d.i)).length;
+        countEl.textContent = `${selCnt} / ${total}`;
+      }
+      updateCounter();
+      renderFilters();
+      renderCompact();
+      renderDiff();
     });
   });
   container.querySelectorAll('.country-header').forEach(el => {
